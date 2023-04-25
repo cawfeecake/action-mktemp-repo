@@ -1,24 +1,66 @@
-const wait = require('./wait');
-const process = require('process');
-const cp = require('child_process');
-const path = require('path');
+const {
+  saveState: mockSaveState,
+  getState: mockGetState,
+  getInput: mockGetInput,
+} = require('@actions/core');
 
-test('throws invalid number', async () => {
-  await expect(wait('foo')).rejects.toThrow('milliseconds not a number');
+const {
+  mockCreateUsingTemplate,
+  mockDelete,
+} = require('@octokit/rest');
+
+
+const TEST_REPO_NAME = 'test-repo-name';
+
+process.env['GITHUB_TOKEN'] = 'test-token';
+
+describe('repo creation', () => {
+
+  mockGetInput.mockImplementation((input) => {
+    if (input == 'name') {
+      return TEST_REPO_NAME;
+    } else {
+      return '';
+    }
+  });
+
+  test('test runs', async () => {
+    // arrange
+    mockCreateUsingTemplate.mockResolvedValueOnce({ data: { name: TEST_REPO_NAME, html_url: 'www.example.org' } });
+
+    // act
+    await (() => { require('./index') })();
+
+    // assert
+    expect(mockGetInput).toHaveBeenCalledWith('name');
+
+    expect(mockSaveState).toHaveBeenLastCalledWith('repo_name', TEST_REPO_NAME);
+
+    expect(mockCreateUsingTemplate.mock.calls).toHaveLength(1);
+    expect(mockCreateUsingTemplate).toHaveBeenCalledWith({
+      template_owner: 'cawfeecake',
+      template_repo: 'test-repo',
+      name: TEST_REPO_NAME,
+    });
+  });
 });
 
-test('wait 500 ms', async () => {
-  const start = new Date();
-  await wait(500);
-  const end = new Date();
-  var delta = Math.abs(end - start);
-  expect(delta).toBeGreaterThanOrEqual(500);
-});
+describe('repo cleanup', () => {
+  test('test runs', async () => {
+    // arrange
+    mockGetState.mockReturnValueOnce(TEST_REPO_NAME);
+    mockDelete.mockResolvedValueOnce({ status: 204 });
 
-// shows how the runner will run a javascript action with env / stdout protocol
-test('test runs', () => {
-  process.env['INPUT_MILLISECONDS'] = 100;
-  const ip = path.join(__dirname, 'index.js');
-  const result = cp.execSync(`node ${ip}`, {env: process.env}).toString();
-  console.log(result);
-})
+    // act
+    await (() => { require('./cleanup') })();
+
+    // assert
+    expect(mockGetState).toHaveBeenCalledWith('repo_name');
+
+    expect(mockDelete.mock.calls).toHaveLength(1);
+    expect(mockDelete).toHaveBeenCalledWith({
+      owner: 'cawfeecake',
+      repo: TEST_REPO_NAME,
+    });
+  });
+});

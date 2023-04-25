@@ -1,17 +1,20 @@
-name: Wait
+name: mktemp-repo
 
-description: Wait some duration of time
+description: creates a GitHub repository according to inputs, then deletes it after the job is finished
 
 inputs:
-  milliseconds:
-    description: number of milliseconds to wait
-    required: true
-    default: 1000
+  name:
+    description: what to name give the repository (or use a random otherwise)
+    required: false
+  prefix:
+    description: 'what to prefix the randomly generated name to give the repository (note: "name" takes precedence if set)'
+    required: false
 
 outputs:
-  time:
-    description: the current time after waiting
+  name:
+    description: the name of the created repository
 
 runs:
   using: node16
   main: dist/index.js
+  post: dist/cleanup.js
