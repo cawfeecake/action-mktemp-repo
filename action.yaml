@@ -1,0 +1,20 @@
+name: mktemp-repo
+
+description: creates a GitHub repository according to inputs, then deletes it after the job is finished
+
+inputs:
+  name:
+    description: what to name give the repository (or use a random otherwise)
+    required: false
+  prefix:
+    description: 'what to prefix the randomly generated name to give the repository (note: "name" takes precedence if set)'
+    required: false
+
+outputs:
+  name:
+    description: the name of the created repository
+
+runs:
+  using: node16
+  main: dist/index.js
+  post: dist/cleanup/index.js
