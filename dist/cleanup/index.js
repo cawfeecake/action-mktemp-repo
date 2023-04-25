@@ -9448,6 +9448,7 @@ async function run() {
     });
     core.info(`DELETE: ${deleteStatus}`);
   } catch (err) {
+    console.log(JSON.stringify(err));
     core.setFailed(err.message);
   }
 }

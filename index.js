@@ -30,6 +30,7 @@ async function run() {
     core.saveState('repo_name', repo);
     core.info(`Link: ${url}`);
   } catch (err) {
+    console.log(JSON.stringify(err));
     core.setFailed(err.message);
   }
 }
