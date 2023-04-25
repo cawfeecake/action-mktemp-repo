@@ -40,6 +40,7 @@ describe('repo creation', () => {
     expect(mockCreateUsingTemplate).toHaveBeenCalledWith({
       template_owner: 'cawfeecake',
       template_repo: 'test-repo',
+      owner: 'cawfeecake',
       name: TEST_REPO_NAME,
     });
   });

@@ -9451,6 +9451,7 @@ async function run() {
     } = await octokit.rest.repos.createUsingTemplate({
       template_owner: owner,
       template_repo: 'test-repo',
+      owner,
       name,
     });
 
